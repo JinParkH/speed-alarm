@@ -67,14 +67,19 @@ def convert(rows):
         if limit <= 0 or limit > 130:
             skipped["제한속도없음"] += 1
             continue
+        # 단속구분: 1 과속, 2 신호(+과속), 1+2 복합, 99 기타(구간단속 등) 사용 / 3 버스전용·4 주정차 등은 제외
+        kind = pick(r, "kind").replace("0", "") if pick(r, "kind") not in ("99",) else "99"
+        if kind in ("3", "4"):
+            skipped["과속단속아님"] = skipped.get("과속단속아님", 0) + 1
+            continue
         flags = 0
-        sect = pick(r, "sect")
-        if "시점" in sect or "시작" in sect:
+        sect = pick(r, "sect").lstrip("0")
+        if sect == "1" or "시점" in sect or "시작" in sect:
             flags |= 1
-        elif "종점" in sect or "끝" in sect:
+        elif sect == "2" or "종점" in sect or "끝" in sect:
             flags |= 2
-        zone = pick(r, "zone")
-        if zone and zone not in ("99", "해당없음", "없음", "0"):
+        zone = pick(r, "zone").lstrip("0")
+        if zone and zone not in ("99", "해당없음", "없음"):
             flags |= 4
         sl = num(pick(r, "sectlen"))
         sect_m = int(sl * 1000) if 0 < sl < 100 else int(sl)  # km 또는 m 표기 모두 처리

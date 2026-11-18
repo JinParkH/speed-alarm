@@ -3,7 +3,7 @@
 // 넘으면 감속할 때까지 알람을 계속 울린다. 차량(테슬라) 연동 없이 단독 동작.
 'use strict';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const $ = (id) => document.getElementById(id);
 
 // ---------- 설정 ----------

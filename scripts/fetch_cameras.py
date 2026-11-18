@@ -24,6 +24,8 @@ def get(page):
             continue
         if "response" in d:
             return d["response"]
+        if "header" in d and "body" in d:  # 이 API는 response 감싸개 없이 옴
+            return d
         last = json.dumps(d, ensure_ascii=False)[:300]
     raise RuntimeError(f"page {page} 실패: {last}")
 
