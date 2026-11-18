@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__d995d05a-e4b0-44cc-8451-1f76bdec17c7__get_auth_user",
+  "tool_input_preview": "{}",
+  "error": "{\"error\":{\"message\":\"Vercel API request failed (404: not_found). User not found.\",\"recovery\":\"Check the API message, arguments, target team and resource state. Correct the request before retrying.\",\"remediation\":{\"actor\":\"agent\",\"action\":\"correct_request\"},\"status\":404,\"code\":\"not_found\",\"operation\":\"GET /v2/user\",\"requestId\":\"iad1:iad1:iad1:sfo1::572lr-1794965630166-bfb43706336d\"},\"cliFallback\":{\"commandTemplate\":\"vercel api /v2/user --method GET\",\"guidance\":\"Check the API message, arguments, t...",
+  "timestamp": "2026-11-18T01:33:50.624Z",
+  "retry_count": 1
+}

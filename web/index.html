@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="과속알람">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>과속알람</title>
+<style>
+  :root {
+    --bg: #050505; --fg: #f4f4f4; --dim: #8a8a8a; --line: #222;
+    --red: #ff2d2d; --amber: #ffb020; --green: #3ddc84; --card: #121212;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    -webkit-user-select: none; user-select: none; overscroll-behavior: none; }
+  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  #app { height: 100%; display: flex; flex-direction: column; padding: 12px 16px; gap: 12px; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--dim); }
+  .chip { padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; }
+  .chip.ok { color: var(--green); border-color: #1d4d33; }
+  .chip.warn { color: var(--amber); border-color: #5a4210; }
+  .chip.bad { color: var(--red); border-color: #5a1515; }
+  .main { flex: 1; display: grid; grid-template-rows: 1fr auto; gap: 12px; min-height: 0; }
+  .speed { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .speed .num { font-size: min(38vw, 30vh); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
+  .speed .unit { font-size: 18px; color: var(--dim); margin-top: 4px; }
+  .cam { background: var(--card); border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 120px; }
+  .sign { flex: none; width: 92px; height: 92px; border-radius: 50%; border: 10px solid var(--red); background: #fff; color: #000;
+    display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .sign.off { border-color: #333; background: #1a1a1a; color: #444; }
+  .cam .info { min-width: 0; }
+  .cam .dist { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .cam .label { font-size: 15px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cam .tag { display: inline-block; font-size: 12px; padding: 2px 7px; border-radius: 6px; background: #2a2a2a; margin-top: 4px; }
+  .controls { display: flex; gap: 10px; }
+  button { font: inherit; color: var(--fg); background: #1c1c1c; border: 1px solid #2c2c2c; border-radius: 14px; padding: 14px 16px; font-size: 17px; font-weight: 600; }
+  button:active { transform: scale(0.98); }
+  #startBtn { flex: 1; background: #0a7d3c; border-color: #0a7d3c; font-size: 20px; }
+  #startBtn.running { background: #2a2a2a; border-color: #333; }
+  body.alarm .speed .num { color: var(--red); }
+  body.alarm #flash { opacity: 1; }
+  #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .15s;
+    box-shadow: inset 0 0 0 14px var(--red), inset 0 0 120px rgba(255,45,45,.55); animation: pulse .5s infinite alternate; }
+  @keyframes pulse { from { filter: brightness(0.7); } to { filter: brightness(1.2); } }
+  body.near:not(.alarm) .sign:not(.off) { box-shadow: 0 0 0 4px rgba(255,176,32,.45); }
+  #notice { font-size: 14px; color: var(--amber); text-align: center; min-height: 1em; }
+  /* 설정 시트 */
+  #sheet { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: flex-end; z-index: 10; }
+  #sheet.open { display: flex; }
+  #sheet .panel { width: 100%; max-height: 88%; overflow: auto; background: #151515; border-radius: 22px 22px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 16px; }
+  .row small { display: block; color: var(--dim); font-size: 12px; margin-top: 2px; }
+  .row input[type=number], .row select { width: 96px; font: inherit; font-size: 16px; color: var(--fg); background: #222; border: 1px solid #333; border-radius: 10px; padding: 8px; text-align: right; }
+  .row input[type=checkbox] { width: 26px; height: 26px; accent-color: var(--green); }
+  .sim { display: none; gap: 8px; align-items: center; justify-content: center; font-size: 15px; color: var(--dim); }
+  body.simming .sim { display: flex; }
+  .sim button { padding: 8px 14px; font-size: 15px; }
+  h3 { margin: 18px 0 4px; font-size: 14px; color: var(--dim); font-weight: 600; }
+  @media (orientation: landscape) and (max-height: 500px) {
+    .main { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+    .speed .num { font-size: 42vh; }
+    .cam { align-self: center; }
+  }
+</style>
+</head>
+<body>
+<div id="flash"></div>
+<div id="app">
+  <div class="bar">
+    <span class="chip" id="gpsChip">GPS 대기</span>
+    <span class="chip" id="wakeChip">화면유지 꺼짐</span>
+    <span class="chip" id="dataChip">데이터 로딩</span>
+  </div>
+  <div class="main">
+    <div class="speed">
+      <div class="num" id="speed">--</div>
+      <div class="unit">km/h <span id="avgText"></span></div>
+    </div>
+    <div class="cam">
+      <div class="sign off" id="sign">--</div>
+      <div class="info">
+        <div class="dist" id="dist">전방 카메라 없음</div>
+        <div class="label" id="label">&nbsp;</div>
+        <div id="tags"></div>
+      </div>
+    </div>
+  </div>
+  <div class="sim">
+    모의주행 <button id="simDown">−10</button><b id="simSpeed">60</b> km/h<button id="simUp">+10</button>
+  </div>
+  <div id="notice"></div>
+  <div class="controls">
+    <button id="startBtn">시작</button>
+    <button id="setBtn" aria-label="설정">설정</button>
+  </div>
+</div>
+
+<div id="sheet">
+  <div class="panel">
+    <h3>알람</h3>
+    <div class="row"><div>알람 시작 거리<small>카메라 앞 몇 m부터 감시할지</small></div><input type="number" id="s_range" min="100" max="1000" step="50"></div>
+    <div class="row"><div>허용 초과 속도<small>제한속도 + 이 값을 넘으면 알람 (0 = 1km/h만 넘어도)</small></div><input type="number" id="s_tol" min="0" max="20" step="1"></div>
+    <div class="row"><div>진입 안내음<small>과속이 아니어도 카메라 감지 시 '딩동' 한 번</small></div><input type="checkbox" id="s_chime"></div>
+    <div class="row"><div>음성 안내<small>"300미터 앞 단속, 제한속도 60"</small></div><input type="checkbox" id="s_voice"></div>
+    <div class="row"><div>소리 모드<small>재생: 무음 스위치 무시(음악은 멈춤) / 겹치기: 음악 위에 섞임(무음 스위치 따름)</small></div>
+      <select id="s_audio"><option value="playback">재생</option><option value="transient">덕킹</option><option value="ambient">겹치기</option></select></div>
+    <div class="row"><div>알람 소리 테스트</div><button id="testBtn">울려보기</button></div>
+    <h3>테스트</h3>
+    <div class="row"><div>모의주행<small>실제 GPS 대신 가상 이동으로 동작 확인 (첫 카메라 1km 앞에서 출발)</small></div><button id="simBtn">시작</button></div>
+    <h3>정보</h3>
+    <div class="row"><div>카메라 데이터<small id="dataInfo">-</small></div></div>
+    <div class="row"><div>앱 버전<small id="verInfo">-</small></div></div>
+    <div style="padding-top:14px"><button id="closeBtn" style="width:100%">닫기</button></div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
