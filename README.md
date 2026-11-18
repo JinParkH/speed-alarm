@@ -1,5 +1,7 @@
 # 과속알람 (개인용)
 
+> 차량 상태 모니터는 [monitor/README.md](monitor/README.md) 참고.
+
 아이폰 홈 화면 웹앱. 폰 GPS 속도와 전국 무인단속카메라 데이터(앱에 내장)를 비교해, 진행 방향 앞 300m(설정 가능) 안 카메라의 제한속도를 넘으면 감속할 때까지 알람을 계속 울린다. 차량 연동 없이 단독 동작.
 
 - 주소: https://jinparkh.github.io/speed-alarm/
