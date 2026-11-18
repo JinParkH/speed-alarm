@@ -1,7 +1,0 @@
-{
-  "tool_name": "mcp__Claude_Browser__preview_start",
-  "tool_input_preview": "{\"name\":\"speed-alarm\"}",
-  "error": "No server named \"speed-alarm\" found in .claude/launch.json. Available servers: \"chicken-tycoon\", \"animal-match\", \"tms-web\". Pass one of these names, or add a new configuration for \"speed-alarm\".",
-  "timestamp": "2026-11-18T01:32:52.563Z",
-  "retry_count": 1
-}
